@@ -113,6 +113,28 @@ def merge_field_to_standard_response(standard_response, field_response, field_ro
 	return output
 
 
+def query_based_on_results(data, field, fields, endpoint):
+	'''
+	
+
+	Parameters:
+		standard_response (json): JSON object with query response. Obtained from: query_gdc_api(endpoint,field,value,fields='NA').
+
+	Returns:
+		output (dataframe): Standard_response dataframe with field_response extra column.
+
+	'''
+
+	data[field_to_add] = ''
+	for index, case in enumerate(data[field]):
+		case_id = case.strip()
+		response_case = query_gdc_api(endpoint = endpoint, field = field, value = case_id, fields = fields)
+		decoded_case = response_case.json()['data']['hits'][0][fields].strip()
+		gene_data[fields][index] = decoded_case
+
+
+
+
 def main():
 	'''
 	Run as:

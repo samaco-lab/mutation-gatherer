@@ -1,6 +1,9 @@
 #derived from Parashar Dhapola's https://gist.github.com/parashardhapola/e095e3ebd068c90e7089b53e46b8e0bc
 
 import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle
+import matplotlib
+from itertools import repeat
 
 class GenomicLollipopPlot(object):
 	def __init__(self, exon_intervals, marker_pos=[], marker_heights=[], marker_colors=[],
@@ -130,8 +133,40 @@ def test():
 	exon_pos = [97543299,97544702], [97547885,97548026], [97564044,97564188], [97658624,97658804], [97700407,97700550], [97770814,97770934], [97771732,97771853], [97839116,97839200], [97847948,97848017], [97915614,97915779], [97981281,97981497], [98015115,98015300], [98039315,98039526], [98058773,98058943], [98060614,98060722], [98144650,98144738], [98157272,98157354], [98164906,98165103], [98187065,98187227], [98205947,98206035], [98293669,98293752], [98348819,98348930], [98386439,98386615]
 	#marker positions
 	marker_pos = [97947885, 98247485]
-	gene = LollipopPlot(exon_pos, marker_pos)
+	gene = GenomicLollipopPlot(exon_pos, marker_pos)
 	gene.show()    	
+
+
+def obtain_markers():
+	pass
+
+def cdna_lollipop_plot(exon_coordinates, variant_coordinates=[10,100,1000,10000,15000]):
+	fig = plt.figure(figsize=(50,1.5))
+	ax = fig.add_subplot()
+	ax.spines['right'].set_visible(False)
+	ax.spines['top'].set_visible(False)
+	ax.spines['left'].set_visible(False)	
+
+	x1 = 0
+	for start, end in exon_coordinates:
+		size = end - start
+		x2 = x1 + size
+		exon = matplotlib.patches.Rectangle((x1,0),x2,50, edgecolor = 'red', facecolor = 'paleturquoise')
+		ax.add_patch(exon)
+		x1 = x2
+
+	xlim1 = -50
+	xlim2 = x2 + 100
+
+	plt.xlim([xlim1,xlim2])
+	plt.ylim([-10,110])
+
+	stems = []
+	stems.extend(repeat(200,len(variant_coordinates)))
+	plt.stem(variant_coordinates, stems, bottom = 50, linefmt = 'grey', use_line_collection = False, markerfmt = 'D')
+
+	plt.show()
+
 
 def main():
 	pass
