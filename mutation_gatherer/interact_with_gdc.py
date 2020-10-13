@@ -1,6 +1,7 @@
 import requests
 import json
 import pandas as pd
+import hgvs.parser as hgvs
 
 
 def query_gdc_api(endpoint,field,value,fields='NA'):
@@ -113,27 +114,110 @@ def merge_field_to_standard_response(standard_response, field_response, field_ro
 	return output
 
 
+def standardize_hgvs(data, parsee):
+	'''
+	
+
+	Parameters:
+		data (dataframe): 
+
+	Returns:
+		data (dataframe): 
+
+	'''
+	
+	chr2grch38 = pd.read_csv('chr2grch38.txt', sep = "\t")
+	data['hgvs'] = ''
+	all_hgvs = []
+
+	for index,value in enumerate(data['genomic_dna_change']):
+		hgvs_data =  parsee.parse_hgvs_variant(value)
+		chrom = hgvs_data.ac.strip()
+		ncid = chr2grch38['grch38'][chr2grch38['chromosome'] == chrom].to_string(index=False)
+		hgvs = value.replace(chrom,ncid)
+		all_hgvs.append(hgvs)
+	
+	data['hgvs'] = all_hgvs
+	
+	return data
+
+
 def query_based_on_results(data, field, fields, endpoint):
 	'''
 	
 
 	Parameters:
-		standard_response (json): JSON object with query response. Obtained from: query_gdc_api(endpoint,field,value,fields='NA').
+		data (dataframe): 
 
 	Returns:
-		output (dataframe): Standard_response dataframe with field_response extra column.
+		data (dataframe): 
 
 	'''
 
-	data[field_to_add] = ''
+	data[fields] = ''
+	all_fields = []
 	for index, case in enumerate(data[field]):
 		case_id = case.strip()
 		response_case = query_gdc_api(endpoint = endpoint, field = field, value = case_id, fields = fields)
 		decoded_case = response_case.json()['data']['hits'][0][fields].strip()
-		gene_data[fields][index] = decoded_case
+		all_fields.append(decoded_case)
+		
+	data[fields] = all_fields
+	return data
 
 
+def write_hgvs_gdc_file(gene, data):
+	'''
+	
 
+	Parameters:
+		
+
+	Returns:
+		
+
+	'''
+
+	gdc_output_file = "{}_GDC.tsv".format(gene)
+	gdc_output = open(gdc_output_file,'w+')
+	gdc_output.write("ssm_id\tdisease_type\thgvs\tdataset\n")
+	for index,mutation in data.iterrows():
+		output_tsv = "{}\t{}\t{}\tgdc\n".format(mutation['ssm_id'].strip(),mutation['disease_type'].strip(),mutation['hgvs'].strip())
+		gdc_output.write (output_tsv)
+	gdc_output.close()
+
+def process_gdc_per_gene(gene, eda = 'no'):
+	'''
+	
+
+	Parameters:
+		
+
+	Returns:
+		
+
+	'''
+
+	#get all the mutations
+	response = query_gdc_api(endpoint = 'ssms', field = 'consequence.transcript.gene.symbol', value = gene)
+
+	#get all the case identifiers to mutations
+	response_case_ids = query_gdc_api(endpoint = 'ssms', field = 'consequence.transcript.gene.symbol', value = gene, fields = 'occurrence.case.case_id')
+
+	#merge into one table
+	gene_data = merge_field_to_standard_response(standard_response = response, field_response = response_case_ids, field_root = 'occurrence', field_subroot = 'case', field = 'case_id')
+
+	#change hgvs to standard expression
+	hp  = hgvs.Parser()
+	gene_data = standardize_hgvs(data = gene_data, parsee = hp)
+
+	#add disease_type data
+	gene_data = query_based_on_results(data = gene_data, field = 'case_id', fields = 'disease_type', endpoint = 'cases')
+
+	#write GDC file
+	write_hgvs_gdc_file(gene= gene, data = gene_data)
+	if eda == 'yes':
+		return gene_data
 
 def main():
 	'''
@@ -145,6 +229,7 @@ def main():
 
 	'''
 	pass
+	
 
 
 if __name__ == "__main__":
