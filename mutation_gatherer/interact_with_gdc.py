@@ -97,7 +97,6 @@ def merge_field_to_standard_response(standard_response, field_response, field_ro
 	elif field_format == 'dataframe':
 		field_tmp_dataframe == field_response
 
-
 	field_values = []
 	for i in range(0, len(field_tmp_dataframe)):
 		standard_id = field_tmp_dataframe['id'][i].strip()
@@ -201,24 +200,31 @@ def process_gdc_per_gene(gene, eda = 'no'):
 	#get all the mutations
 	response = query_gdc_api(endpoint = 'ssms', field = 'consequence.transcript.gene.symbol', value = gene)
 
-	#get all the case identifiers to mutations
-	response_case_ids = query_gdc_api(endpoint = 'ssms', field = 'consequence.transcript.gene.symbol', value = gene, fields = 'occurrence.case.case_id')
+	if response.json()['data']['pagination']['total'] > 0:
+		#get all the case identifiers to mutations
+		response_case_ids = query_gdc_api(endpoint = 'ssms', field = 'consequence.transcript.gene.symbol', value = gene, fields = 'occurrence.case.case_id')
 
-	#merge into one table
-	gene_data = merge_field_to_standard_response(standard_response = response, field_response = response_case_ids, field_root = 'occurrence', field_subroot = 'case', field = 'case_id')
+		#merge into one table
+		gene_data = merge_field_to_standard_response(standard_response = response, field_response = response_case_ids, field_root = 'occurrence', field_subroot = 'case', field = 'case_id')
 
-	#change hgvs to standard expression
-	hp  = hgvs.Parser()
-	gene_data = standardize_hgvs(data = gene_data, parsee = hp)
+		#change hgvs to standard expression
+		hp  = hgvs.Parser()
+		gene_data = standardize_hgvs(data = gene_data, parsee = hp)
 
-	#add disease_type data
-	gene_data = query_based_on_results(data = gene_data, field = 'case_id', fields = 'disease_type', endpoint = 'cases')
+		#add disease_type data
+		gene_data = query_based_on_results(data = gene_data, field = 'case_id', fields = 'disease_type', endpoint = 'cases')
 
-	#write GDC file
-	write_hgvs_gdc_file(gene= gene, data = gene_data)
-	if eda == 'yes':
-		return gene_data
+		#write GDC file
+		write_hgvs_gdc_file(gene= gene, data = gene_data)
+		if eda == 'yes':
+			return gene_data
 
+	else:
+		if eda== 'yes':
+			gene_data = pd.DataFrame()
+			return gene_data
+
+			
 def main():
 	'''
 	Run as:
