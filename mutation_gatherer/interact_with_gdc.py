@@ -2,6 +2,7 @@ import requests
 import json
 import pandas as pd
 import hgvs.parser as hgvs
+from datetime import datetime
 
 
 def query_gdc_api(endpoint,field,value,fields='NA'):
@@ -176,14 +177,14 @@ def write_hgvs_gdc_file(gene, data):
 		
 
 	'''
-
-	gdc_output_file = "{}_GDC.tsv".format(gene)
+	gdc_output_file = "./data_gdc/{}_{}_GDC.tsv".format(str(datetime.date(datetime.now())),gene)
 	gdc_output = open(gdc_output_file,'w+')
 	gdc_output.write("ssm_id\tdisease_type\thgvs\tdataset\n")
 	for index,mutation in data.iterrows():
 		output_tsv = "{}\t{}\t{}\tgdc\n".format(mutation['ssm_id'].strip(),mutation['disease_type'].strip(),mutation['hgvs'].strip())
 		gdc_output.write (output_tsv)
 	gdc_output.close()
+	print ("{} file written".format(gdc_output_file))
 
 def process_gdc_per_gene(gene, eda = 'no'):
 	'''
@@ -201,6 +202,7 @@ def process_gdc_per_gene(gene, eda = 'no'):
 	response = query_gdc_api(endpoint = 'ssms', field = 'consequence.transcript.gene.symbol', value = gene)
 
 	if response.json()['data']['pagination']['total'] > 0:
+		print ("{} has GDC response".format(gene))
 		#get all the case identifiers to mutations
 		response_case_ids = query_gdc_api(endpoint = 'ssms', field = 'consequence.transcript.gene.symbol', value = gene, fields = 'occurrence.case.case_id')
 
@@ -220,9 +222,11 @@ def process_gdc_per_gene(gene, eda = 'no'):
 			return gene_data
 
 	else:
+		print ("{} doesn't have GDC response".format(gene))
 		if eda== 'yes':
 			gene_data = pd.DataFrame()
 			return gene_data
+
 
 			
 def main():
