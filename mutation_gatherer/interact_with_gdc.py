@@ -179,7 +179,7 @@ def write_hgvs_gdc_file(gene, data):
 	'''
 	gdc_output_file = "./data_gdc/{}_{}_GDC.tsv".format(str(datetime.date(datetime.now())),gene)
 	gdc_output = open(gdc_output_file,'w+')
-	gdc_output.write("ssm_id\tdisease_type\thgvs\tdataset\n")
+	gdc_output.write("variant_id\tdisease\thgvs\tdataset\n")
 	for index,mutation in data.iterrows():
 		output_tsv = "{}\t{}\t{}\tgdc\n".format(mutation['ssm_id'].strip(),mutation['disease_type'].strip(),mutation['hgvs'].strip())
 		gdc_output.write (output_tsv)
