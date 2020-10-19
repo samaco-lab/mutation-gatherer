@@ -127,7 +127,7 @@ def standardize_hgvs(data):
 	'''
 	
 	chr2grch38 = pd.read_csv('chr2grch38.txt', sep = "\t")
-	hp  = hgvs.Parser()
+	hp  = hgvs.parser.Parser()
 	data['hgvs'] = ''
 	all_hgvs = []
 
