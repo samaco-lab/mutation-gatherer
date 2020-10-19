@@ -144,12 +144,13 @@ def venn2_groups(data1, data2, label1, label2):
 	varg1 = np.array(set(data1['var_g'].values))
 	varg2 = np.array(set(data2['var_g'].values))
 	varg1_only = difference_var_g(varg1, varg2)
+	label1_only = np.repeat(label1,varg1_only.size)
 	varg2_only = difference_var_g(varg2, varg1)
+	label2_only = np.repeat(label2,varg2_only.size)
 	varg12_intersect = intersection_var_g(var_g1, var_g2)
-	label12_intesrsect = "{}_{}".format(label1,label2)
-	venn2 = pd.Series[varg1_only, varg2_only, varg12_intersect]
-	for item in venn2:
-
+	label12_intersect = np.repeat("{}_{}".format(label1,label2),varg12_intersect.size)
+	venn2_df['variant'] = pd.Series[varg1_only, varg2_only, varg12_intersect]
+	venn2_df['source'] = pd.Series[label1_only, label2_only, label12_intersect]
 	return venn2_df
 
 def venn3_groups(data1, data2, data3):
