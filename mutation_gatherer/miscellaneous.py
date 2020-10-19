@@ -7,7 +7,7 @@ import datetime
 import hgvs.parser
 
 
-def open_dated_hgvs_file(gene, type):
+def open_dated_hgvs_file(gene, file_type):
 	'''
 
 	Parameters:
@@ -18,9 +18,9 @@ def open_dated_hgvs_file(gene, type):
 	'''	
 	gene_pattern = re.compile(gene)
 
-	if type == 'gdc':
+	if file_type == 'gdc':
 		folder = "./data_gdc/"
-	elif type == 'clinvar':
+	elif file_type == 'clinvar':
 		folder = "./data_clinvar/"
 	
 	datestamps = []
@@ -39,9 +39,9 @@ def open_dated_hgvs_file(gene, type):
 	if gene_file != None:
 		most_recent = sorted(datestamps, reverse = True)[0]
 	
-		if type == 'gdc':
+		if file_type == 'gdc':
 			file = "./data_gdc/{}_{}_GDC.tsv".format(most_recent,gene)
-		if type == 'clinvar':
+		if file_type == 'clinvar':
 			file = "./data_clinvar/{}_{}_ClinVar.tsv".format(most_recent,gene)
 
 		data = pd.read_csv(file,sep='\t')
@@ -140,20 +140,20 @@ def venn2_groups(data1, data2, label1, label2):
 	Returns:
 
 	'''	
-	venn2_df = pd.DataFrame('variant','source')
-	varg1 = np.array(set(data1['var_g'].values))
-	varg2 = np.array(set(data2['var_g'].values))
+	venn2_df = pd.DataFrame(columns=['variant','source'])
+	varg1 = np.array(list(set(data1['var_g'].values)))
+	varg2 = np.array(list(set(data2['var_g'].values)))
 	varg1_only = difference_var_g(varg1, varg2)
 	label1_only = np.repeat(label1,varg1_only.size)
 	varg2_only = difference_var_g(varg2, varg1)
 	label2_only = np.repeat(label2,varg2_only.size)
-	varg12_intersect = intersection_var_g(var_g1, var_g2)
+	varg12_intersect = intersection_var_g(varg1, varg2)
 	label12_intersect = np.repeat("{}_{}".format(label1,label2),varg12_intersect.size)
-	venn2_df['variant'] = pd.Series[varg1_only, varg2_only, varg12_intersect]
-	venn2_df['source'] = pd.Series[label1_only, label2_only, label12_intersect]
+	venn2_df['variant'] = list(varg1_only) + list(varg2_only) + list(varg12_intersect)
+	venn2_df['source'] = list(label1_only) + list(label2_only) + list(label12_intersect)
 	return venn2_df
 
-def venn3_groups(data1, data2, data3):
+def venn3_groups(data1, data2, data3, label1, label2, label3):
 	'''
 	
 	
