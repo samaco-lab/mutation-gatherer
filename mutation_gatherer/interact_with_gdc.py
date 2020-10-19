@@ -1,7 +1,7 @@
 import requests
 import json
 import pandas as pd
-import hgvs.parser as hgvs
+import hgvs.parser
 from datetime import datetime
 
 
@@ -127,6 +127,7 @@ def standardize_hgvs(data, parsee):
 	'''
 	
 	chr2grch38 = pd.read_csv('chr2grch38.txt', sep = "\t")
+	hp  = hgvs.Parser()
 	data['hgvs'] = ''
 	all_hgvs = []
 
@@ -210,7 +211,6 @@ def process_gdc_per_gene(gene, eda = 'no'):
 		gene_data = merge_field_to_standard_response(standard_response = response, field_response = response_case_ids, field_root = 'occurrence', field_subroot = 'case', field = 'case_id')
 
 		#change hgvs to standard expression
-		hp  = hgvs.Parser()
 		gene_data = standardize_hgvs(data = gene_data, parsee = hp)
 
 		#add disease_type data
