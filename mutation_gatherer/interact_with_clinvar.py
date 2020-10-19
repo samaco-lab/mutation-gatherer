@@ -1,6 +1,8 @@
 import requests
 import xmltodict
-import hgvs.parser as hgvs
+import pandas as pd
+import numpy as np
+from datetime import datetime
 
 def query_clinvar_api_gene_for_ids(term):
 	'''
@@ -59,6 +61,7 @@ def parse_clinvar_response_old(gene):
 		time.sleep(10)
 	return
 
+
 def query_ids_for_data(ids):
 	'''
 	Interact with ClinVar API (https://www.ncbi.nlm.nih.gov/clinvar/docs/maintenance_use/, https://www.ncbi.nlm.nih.gov/clinvar/docs/linking/).
@@ -68,33 +71,79 @@ def query_ids_for_data(ids):
 
 	Returns:
 
-	'''	
-	all_hgvs = []
+	'''		
 	ids_query = ','.join(ids)
 	url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=clinvar&rettype=vcv&is_variationid&id="
 	query_ids_url= "{}{}&from_esearch=true".format(url,ids_query)
-	data = requests.get(query_ids_url)
+	output = requests.get(query_ids_url)
+	output_df = pd.DataFrame(columns=['clinvar_id','accession','interpreted_condition','clinical_significance','method_type','origin','hgvs','dataset'])
 	for i in range(0,len(ids)):
+		output_ordered_dict = xmltodict.parse(output.content)
 		try:
-			hgvs = xmltodict.parse(data.content)['ClinVarResult-Set']['VariationArchive'][i]['InterpretedRecord']['SimpleAllele']['HGVSlist']['HGVS'][0]['NucleotideExpression']['Expression'].strip()
+			hgvs = output_ordered_dict['ClinVarResult-Set']['VariationArchive'][i]['InterpretedRecord']['SimpleAllele']['HGVSlist']['HGVS'][0]['NucleotideExpression']['Expression'].strip()
 		except:
 			hgvs = ''
 		try:
-			method_type = xmltodict.parse(data.content)['ClinVarResult-Set']['VariationArchive'][i]['InterpretedRecord']['ClinicalAssertionList']['ClinicalAssertion']['ObservedInList']['ObservedIn']['Method']['MethodType'].strip()
+			method_type = output_ordered_dict['ClinVarResult-Set']['VariationArchive'][i]['InterpretedRecord']['ClinicalAssertionList']['ClinicalAssertion']['ObservedInList']['ObservedIn']['Method']['MethodType'].strip()
 		except:
 			method_type = ''
 		try:
-			origin = xmltodict.parse(data.content)['ClinVarResult-Set']['VariationArchive'][i]['InterpretedRecord']['ClinicalAssertionList']['ClinicalAssertion']['ObservedInList']['ObservedIn']['Sample']['Origin'].strip()
+			origin = output_ordered_dict['ClinVarResult-Set']['VariationArchive'][i]['InterpretedRecord']['ClinicalAssertionList']['ClinicalAssertion']['ObservedInList']['ObservedIn']['Sample']['Origin'].strip()
 		except:
 			origin = ''
 		try:
-			clinical_significance = xmltodict.parse(data.content)['ClinVarResult-Set']['VariationArchive'][i]['InterpretedRecord']['RCVList']['RCVAccession']['@Interpretation']
+			clinical_significance = output_ordered_dict['ClinVarResult-Set']['VariationArchive'][i]['InterpretedRecord']['RCVList']['RCVAccession']['@Interpretation']
 		except:
 			clinical_significance = ''
+		try:
+			accession = output_ordered_dict['ClinVarResult-Set']['VariationArchive'][i]['@Accession']
+		except:
+			accession = ''
+		try:
+			interpreted_condition = output_ordered_dict['ClinVarResult-Set']['VariationArchive'][i]['InterpretedRecord']['RCVList']['RCVAccession']['InterpretedConditionList']['InterpretedCondition']['#text']
+		except:
+			interpreted_condition = ''
+
+		id_output = [ids[i], accession, interpreted_condition, clinical_significance, method_type, origin, hgvs, 'clinvar']
+		output_df.loc[i] = id_output
 		
-		if hgvs.startswith('NC',0) and method_type == 'clinical testing' and origin == 'germline' and (clinical_significance == 'Pathogenic' or clinical_significance == 'Likely Pathogenic'):
-			all_hgvs.append(hgvs)
-	return all_hgvs
+	return output_df
+
+
+def filter_clinvar_variants(data, filter_clinical='original', filter_origin = 'yes', filter_method = 'yes'):
+	'''
+	
+
+	Parameters:
+		
+
+	Returns:
+		
+
+	'''	
+	filtered_data = pd.DataFrame()
+
+	pathogenic = data['clinical_significance'] == 'Pathogenic'
+	likely_pathogenic = data['clinical_significance'] == 'Likely pathogenic'
+	vus = data['clinical_significance'] == 'Uncertain significance'
+	
+	if filter_origin == 'yes':
+		germline = data['origin'] == 'germline'
+	else:
+		germline = pd.Series(np.repeat(True,data.shape[0]))
+	
+	if filter_method == 'yes':
+		clinical_testing = data['method_type'] == 'clinical testing'
+	else:
+		clinical_testing = pd.Series(np.repeat(True,data.shape[0]))	
+	
+	if filter_clinical == 'original':
+		filtered_data = data[(pathogenic | likely_pathogenic) & clinical_testing & germline]
+	
+	elif filter_clinical == 'vus':
+		filtered_data = data[(pathogenic | likely_pathogenic | vus) & clinical_testing & germline]
+	
+	return filtered_data
 
 
 def write_hgvs_clinvar_file(gene, data):
@@ -109,18 +158,17 @@ def write_hgvs_clinvar_file(gene, data):
 
 	'''
 
-	clinvar_output_file = "{}_ClinVar.tsv".format(gene)
+	clinvar_output_file = "./data_clinvar/{}_{}_ClinVar.tsv".format(str(datetime.date(datetime.now())),gene)
 	clinvar_output = open(clinvar_output_file,'w+')
-	clinvar_output.write("ssm_id\tdisease_type\thgvs\tdataset\n")
-
-	for hgvs in enumerate(data):
-		output = "NA\tNA\t{}\tclinvar\n".format(hgvs.strip())
-		clinvar_output.write(output)
-
+	clinvar_output.write("variant_id\tdisease\thgvs\tdataset\n")
+	for index,mutation in data.iterrows():
+		output_tsv = "{}\t{}\t{}\tclinvar\n".format(mutation['accession'].strip(),mutation['interpreted_condition'].strip(),mutation['hgvs'].strip())
+		clinvar_output.write(output_tsv)
 	clinvar_output.close()
+	print ("{} file written".format(clinvar_output_file))
 
 
-def process_gdc_per_gene(gene, eda = 'no'):
+def process_clinvar_per_gene(gene, eda = 'no'):
 	'''
 	
 
@@ -132,28 +180,21 @@ def process_gdc_per_gene(gene, eda = 'no'):
 
 	'''
 
-	#get all the mutations
-	response = query_gdc_api(endpoint = 'ssms', field = 'consequence.transcript.gene.symbol', value = gene)
+	#query ClinVar for the variant IDs per gene
+	ids = query_clinvar_api_gene_for_ids(term = gene)
 
-	#get all the case identifiers to mutations
-	response_case_ids = query_gdc_api(endpoint = 'ssms', field = 'consequence.transcript.gene.symbol', value = gene, fields = 'occurrence.case.case_id')
+	if len(ids) > 0:
+		print ("{} has ClinVar response".format(gene))
+		#query ClinVar for the information per variant ids, and filter by germline, clinical testing, and pathogenic/likelypathogenic
+		output = query_ids_for_data(ids=ids)
 
-	#merge into one table
-	gene_data = merge_field_to_standard_response(standard_response = response, field_response = response_case_ids, field_root = 'occurrence', field_subroot = 'case', field = 'case_id')
+		#filter ClinVar entries by variants' clinical significance, method of obtention type, and variant origin
+		filtered_output = filter_clinvar_variants(data = output, filter_clinical='original', filter_origin = 'yes', filter_method = 'yes')
 
-	#change hgvs to standard expression
-	hp  = hgvs.Parser()
-	gene_data = standardize_hgvs(data = gene_data, parsee = hp)
+		#write clinvar file
+		write_hgvs_clinvar_file(gene= gene, data = filtered_output)
 
-	#add disease_type data
-	gene_data = query_based_on_results(data = gene_data, field = 'case_id', fields = 'disease_type', endpoint = 'cases')
-
-	#write GDC file
-	write_hgvs_gdc_file(gene= gene, data = gene_data)
-	if eda == 'yes':
-		return gene_data
-
-
+		
 def main():
 	'''
 	Run as:
