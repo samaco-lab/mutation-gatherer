@@ -114,7 +114,7 @@ def merge_field_to_standard_response(standard_response, field_response, field_ro
 	return output
 
 
-def standardize_hgvs(data):
+def standardize_hgvs(data, parsee):
 	'''
 	
 
@@ -127,12 +127,11 @@ def standardize_hgvs(data):
 	'''
 	
 	chr2grch38 = pd.read_csv('chr2grch38.txt', sep = "\t")
-	hp  = hgvs.parser.Parser()
 	data['hgvs'] = ''
 	all_hgvs = []
 
 	for index,value in enumerate(data['genomic_dna_change']):
-		hgvs_data =  hp.parse_hgvs_variant(value)
+		hgvs_data =  parsee.parse_hgvs_variant(value)
 		chrom = hgvs_data.ac.strip()
 		ncid = chr2grch38['grch38'][chr2grch38['chromosome'] == chrom].to_string(index=False)
 		hgvs = value.replace(chrom,ncid)
@@ -211,7 +210,8 @@ def process_gdc_per_gene(gene, eda = 'no'):
 		gene_data = merge_field_to_standard_response(standard_response = response, field_response = response_case_ids, field_root = 'occurrence', field_subroot = 'case', field = 'case_id')
 
 		#change hgvs to standard expression
-		gene_data = standardize_hgvs(data = gene_data)
+		hp = hgvs.parser.Parser()
+		gene_data = standardize_hgvs(data = gene_data, parsee = hp)
 
 		#add disease_type data
 		gene_data = query_based_on_results(data = gene_data, field = 'case_id', fields = 'disease_type', endpoint = 'cases')
