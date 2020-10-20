@@ -19,11 +19,11 @@ def open_dated_hgvs_file(gene, file_type):
 	gene_pattern = re.compile(gene)
 
 	if file_type == 'gdc':
-		folder = "./data_gdc/"
+		folder = "data_gdc"
 	elif file_type == 'clinvar':
-		folder = "./data_clinvar/"
+		folder = "data_clinvar"
 	elif file_type == 'sfari':
-		folder = "./data_sfari/"
+		folder = "data_sfari"
 
 	
 	datestamps = []
@@ -43,11 +43,11 @@ def open_dated_hgvs_file(gene, file_type):
 		most_recent = sorted(datestamps, reverse = True)[0]
 	
 		if file_type == 'gdc':
-			file = "./data_gdc/{}_{}_GDC.tsv".format(most_recent,gene)
+			file = "./{}/{}_{}_GDC.tsv".format(folder,most_recent,gene)
 		if file_type == 'clinvar':
-			file = "./data_clinvar/{}_{}_ClinVar.tsv".format(most_recent,gene)
+			file = "./{}/{}_{}_ClinVar.tsv".format(folder,most_recent,gene)
 		if file_type == 'sfari':
-			file = "./data_clinvar/{}_{}_SFARI.tsv".format(most_recent,gene)
+			file = "./{}/{}_{}_SFARI.tsv".format(folder,most_recent,gene)
 
 
 		print ("Retrieved {}".format(file))
