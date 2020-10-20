@@ -2,6 +2,7 @@ import requests
 import json
 import re
 import pandas as pd
+from datetime import datetime
 
 def query_ensembl_xrefs_symbol(gene):
 	'''
@@ -141,6 +142,39 @@ def obtain_exon_coordinates(transcript):
 	output = pd.DataFrame(exon_coordinates, columns = ('transcript_id', 'exon_id', 'exon_start', 'exon_end'))
 
 	return output
+
+def write_exon_file(gene, exon_df):
+	'''
+	Using a valid ENSEMBL transcript id, obtain exon boundaries
+	
+	Parameters:
+		transcript (str):
+	
+	Returns:
+		output (dataframe): 
+	'''
+	exon_output_file = "./data_exon/{}_{}_exons.tsv".format(str(datetime.date(datetime.now())),gene)
+	exon_output = open(exon_output_file,'w+')
+	exon_df.to_csv(exon_output_file, sep = "\t", index = False)
+
+def process_exon_coordinates(gene):
+	'''
+	Using a valid ENSEMBL transcript id, obtain exon boundaries
+	
+	Parameters:
+		transcript (str):
+	
+	Returns:
+		output (dataframe):
+	'''
+	ensembl_transcripts_response = query_ensembl_for_transcripts(gene)
+	refseq_transcript = ensembl_transcripts_response['refseq_id'][0]
+	print ("RefSeq Transcript as {} for gene {}".format(refseq_transcript, gene))
+	exon_output = obtain_exon_coordinates(ensembl_transcripts_response['transcript_id'][1])
+	write_exon_file (gene, exon_output)
+
+	return refseq_transcript
+
 
 
 def main():

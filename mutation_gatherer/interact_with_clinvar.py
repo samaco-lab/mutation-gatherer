@@ -165,7 +165,7 @@ def write_hgvs_clinvar_file(gene, data):
 		output_tsv = "{}\t{}\t{}\tclinvar\n".format(mutation['accession'].strip(),mutation['interpreted_condition'].strip(),mutation['hgvs'].strip())
 		clinvar_output.write(output_tsv)
 	clinvar_output.close()
-	print ("{} file written".format(clinvar_output_file))
+	print ("Written {}".format(clinvar_output_file))
 
 
 def process_clinvar_per_gene(gene, eda = 'no'):

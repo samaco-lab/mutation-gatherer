@@ -184,7 +184,7 @@ def write_hgvs_gdc_file(gene, data):
 		output_tsv = "{}\t{}\t{}\tgdc\n".format(mutation['ssm_id'].strip(),mutation['disease_type'].strip(),mutation['hgvs'].strip())
 		gdc_output.write (output_tsv)
 	gdc_output.close()
-	print ("{} file written".format(gdc_output_file))
+	print ("Written {}".format(gdc_output_file))
 
 def process_gdc_per_gene(gene, eda = 'no'):
 	'''

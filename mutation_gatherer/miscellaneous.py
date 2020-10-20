@@ -155,7 +155,6 @@ def venn2_groups(data1, data2, label1, label2, ncid):
 	varg12_intersect = intersection_var_g(varg1, varg2)
 	label12_intersect = np.repeat("{}_{}".format(label1,label2),varg12_intersect.size)
 	
-	print (ncid)
 	venn2_df['hgvs'] = list(varg1_only) + list(varg2_only) + list(varg12_intersect)
 	venn2_df['hgvs'] = ncid + venn2_df['hgvs'].astype(str)
 	venn2_df['source'] = list(label1_only) + list(label2_only) + list(label12_intersect)
@@ -245,7 +244,7 @@ def create_hgvs_venn_list(gene, venn_groups = 2):
 		ncid = ''
 
 	if ncid != '':
-		print ("Doing overlap of hgvs data")
+		print ("Overlap analysis of HGVS data")
 		if venn_groups == 2:
 			venn = venn2_groups(data1 = output_gdc, data2 = output_clinvar, label1 = 'gdc', label2='clinvar', ncid = ncid)
 		elif venn_groups ==3:
