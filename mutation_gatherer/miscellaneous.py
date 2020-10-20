@@ -181,9 +181,9 @@ def venn3_groups(data1, data2, data3, label1, label2, label3, ncid):
 	varg1 = np.array(list(set(data1['var_g'].values)))
 	varg2 = np.array(list(set(data2['var_g'].values)))
 	varg3 = np.array(list(set(data3['var_g'].values)))
-	varg12 = union(varg1, varg2)
-	varg13 = union(varg1, varg3)
-	varg23 = union(varg2, varg3)
+	varg12 = union_var_g(varg1, varg2)
+	varg13 = union_var_g(varg1, varg3)
+	varg23 = union_var_g(varg2, varg3)
 	
 	varg1_only = difference_var_g(varg1, varg23)
 	label1_only = np.repeat(label1,varg1_only.size)
