@@ -156,7 +156,7 @@ def venn2_groups(data1, data2, label1, label2, ncid):
 	label12_intersect = np.repeat("{}_{}".format(label1,label2),varg12_intersect.size)
 	
 	venn2_df['hgvs'] = list(varg1_only) + list(varg2_only) + list(varg12_intersect)
-	venn2_df['hgvs'] = ncid + venn2_df['hgvs'].astype(str)
+	venn2_df['hgvs'] = ncid + ':g.' + venn2_df['hgvs'].astype(str)
 	venn2_df['source'] = list(label1_only) + list(label2_only) + list(label12_intersect)
 	return venn2_df
 
@@ -195,7 +195,7 @@ def venn3_groups(data1, data2, data3, label1, label2, label3, ncid):
 	label23_intersect_only = np.repeat("{}_{}".format(label2,label3),varg23_intersect_only.size)
 	
 	venn3_df['hgvs'] = list(varg1_only) + list(varg2_only) + list(varg3_only) + list(varg123_intersect) + list(varg12_intersect_only) + list(varg13_intersect_only) + list(varg23_intersect_only)
-	venn3_df['hgvs'] = ncid + venn3_df['hgvs'].astype(str)
+	venn3_df['hgvs'] = ncid + ':g.' + venn3_df['hgvs'].astype(str)
 	venn3_df['source'] = list(label1_only) + list(label2_only) + list(label3_only) + list(label123_intersect) + list(label12_intersect_only) + list(label13_intersect_only) + list(label23_intersect_only)
 	
 	return venn3
@@ -218,7 +218,7 @@ def print_hgvs_venn_file(gene, venn):
 		output_tsv = "{}\t{}\n".format(variant['hgvs'].strip(),variant['source'].strip())
 		hgvs_venn_output.write(output_tsv)
 	hgvs_venn_output.close()
-	print ("{} file written".format(hgvs_venn_output_file))
+	print ("Written {}".format(hgvs_venn_output_file))
 
 
 def create_hgvs_venn_list(gene, venn_groups = 2):
