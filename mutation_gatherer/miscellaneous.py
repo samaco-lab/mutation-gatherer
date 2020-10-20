@@ -22,6 +22,9 @@ def open_dated_hgvs_file(gene, file_type):
 		folder = "./data_gdc/"
 	elif file_type == 'clinvar':
 		folder = "./data_clinvar/"
+	elif file_type == 'sfari':
+		folder = "./data_sfari/"
+
 	
 	datestamps = []
 	data = pd.DataFrame()
@@ -43,6 +46,9 @@ def open_dated_hgvs_file(gene, file_type):
 			file = "./data_gdc/{}_{}_GDC.tsv".format(most_recent,gene)
 		if file_type == 'clinvar':
 			file = "./data_clinvar/{}_{}_ClinVar.tsv".format(most_recent,gene)
+		if file_type == 'sfari':
+			file = "./data_clinvar/{}_{}_SFARI.tsv".format(most_recent,gene)
+
 
 		print ("Retrieved {}".format(file))
 		data = pd.read_csv(file,sep='\t')
@@ -248,6 +254,7 @@ def create_hgvs_venn_list(gene, venn_groups = 2):
 		if venn_groups == 2:
 			venn = venn2_groups(data1 = output_gdc, data2 = output_clinvar, label1 = 'gdc', label2='clinvar', ncid = ncid)
 		elif venn_groups ==3:
+			output_sfari = open_dated_hgvs_file(gene = gene, file_type = 'sfari')
 			venn = venn3_groups(data1 = output_gdc, data2 = output_clinvar, data3 = output_sfari, label1 = 'gdc', label2='clinvar', label3 = 'sfari', ncid = ncid)
 		else:
 			venn = pd.DataFrame()
