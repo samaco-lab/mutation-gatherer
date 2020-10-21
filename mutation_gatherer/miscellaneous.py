@@ -224,10 +224,19 @@ def print_hgvs_venn_file(gene, venn):
 	hgvs_venn_output_file = "./data_hgvs_venn/{}_{}_hgvs_venn.tsv".format(str(datetime.date(datetime.now())),gene)
 	hgvs_venn_output = open(hgvs_venn_output_file,'w+')
 	hgvs_venn_output.write("hgvs\tsource\n")
+
+	for_vai_file = "./for_vai_files/{}.txt".format(gene)
+	for_vai = open(for_vai_file,'w+')
+	
 	for index,variant in venn.iterrows():
 		output_tsv = "{}\t{}\n".format(variant['hgvs'].strip(),variant['source'].strip())
 		hgvs_venn_output.write(output_tsv)
+		for_vai_line = "{}\n".format(variant['hgvs'].strip())
+		for_vai.write(output_tsv)
+
 	hgvs_venn_output.close()
+	for_vai.close()
+
 	print ("Written {}".format(hgvs_venn_output_file))
 
 
