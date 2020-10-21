@@ -232,7 +232,7 @@ def print_hgvs_venn_file(gene, venn):
 		output_tsv = "{}\t{}\n".format(variant['hgvs'].strip(),variant['source'].strip())
 		hgvs_venn_output.write(output_tsv)
 		for_vai_line = "{}\n".format(variant['hgvs'].strip())
-		for_vai.write(output_tsv)
+		for_vai.write(for_vai_line)
 
 	hgvs_venn_output.close()
 	for_vai.close()
