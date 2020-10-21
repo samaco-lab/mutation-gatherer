@@ -24,6 +24,8 @@ def open_dated_hgvs_file(gene, file_type):
 		folder = "data_clinvar"
 	elif file_type == 'sfari':
 		folder = "data_sfari"
+	elif file_type == 'venn':
+		folder = "data_hgvs_venn"
 
 	
 	datestamps = []
@@ -48,6 +50,8 @@ def open_dated_hgvs_file(gene, file_type):
 			file = "./{}/{}_{}_ClinVar.tsv".format(folder,most_recent,gene)
 		if file_type == 'sfari':
 			file = "./{}/{}_{}_SFARI.tsv".format(folder,most_recent,gene)
+		if file_type == 'venn':
+			file = "./{}/{}_{}_hgvs_venn.tsv".format(folder,most_recent,gene)
 
 
 		print ("Retrieved {}".format(file))
@@ -191,8 +195,8 @@ def venn3_groups(data1, data2, data3, label1, label2, label3, ncid):
 	label2_only = np.repeat(label2,varg2_only.size)
 	varg3_only = difference_var_g(varg3, varg12)
 	label3_only = np.repeat(label3,varg3_only.size)
-	varg123_intersect = intersection_var_g(var_g1, var_g23)
-	label123_intersect = np.repeat("{}_{}_{}".format(label1,label2,label3),varg122_intersect.size)
+	varg123_intersect = intersection_var_g(varg1, varg23)
+	label123_intersect = np.repeat("{}_{}_{}".format(label1,label2,label3),varg123_intersect.size)
 	varg12_intersect_only = difference_var_g(intersection_var_g(varg1, varg2), varg123_intersect)
 	label12_intersect_only = np.repeat("{}_{}".format(label1,label2),varg12_intersect_only.size)
 	varg13_intersect_only = difference_var_g(intersection_var_g(varg1, varg3), varg123_intersect)
@@ -204,7 +208,7 @@ def venn3_groups(data1, data2, data3, label1, label2, label3, ncid):
 	venn3_df['hgvs'] = ncid + ':g.' + venn3_df['hgvs'].astype(str)
 	venn3_df['source'] = list(label1_only) + list(label2_only) + list(label3_only) + list(label123_intersect) + list(label12_intersect_only) + list(label13_intersect_only) + list(label23_intersect_only)
 	
-	return venn3
+	return venn3_df
 
 
 def print_hgvs_venn_file(gene, venn):
