@@ -93,10 +93,15 @@ def write_hgvs_sfari_file(gene, data):
 	'''	
 	sfari_output_file = "./data_sfari/{}_{}_SFARI.tsv".format(str(datetime.date(datetime.now())),gene)
 	sfari_output = open(sfari_output_file,'w+')
-	sfari_output.write("hgvs\tdataset\tvar_g\n")
+	sfari_output.write("hgvs\tsource\tvar_g\n")
+
 	for index,mutation in data.iterrows():
-		output_tsv = "{}\tsfari\t{}\n".format(mutation['hgvs'].strip(),mutation['var_g'].strip())
-		sfari_output.write (output_tsv)
+		try:
+			output_tsv = "{}\tsfari\t{}\n".format(mutation['hgvs'].strip(),mutation['var_g'].strip())
+			sfari_output.write (output_tsv)
+		except:
+			pass
+			
 	sfari_output.close()
 	print ("Written {}".format(sfari_output_file))
 
@@ -110,7 +115,6 @@ def process_sfari_cdna_per_gene(gene, refseq_transcript,parsee):
 
 	'''
 	input_sfari_file = "./input_sfari/{}.tsv".format(gene)
-	print (input_sfari_file)
 	input_sfari = pd.read_csv(input_sfari_file, sep="\t")
 	adjusted_transcript = find_valid_transcript_subversion(data = input_sfari,refseq_transcript = refseq_transcript)
 	print ("Adjusting transcript to {} for Mutalyzer".format(adjusted_transcript))
