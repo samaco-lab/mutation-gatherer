@@ -38,7 +38,10 @@ def open_dated_hgvs_file(gene, file_type):
 		except:
 			gene_file = gene_pattern.search(file)
 		if gene_file == gene:
-			date_match = str(list(datefinder.find_dates(file))[0].date())
+			try:
+				date_match = str(list(datefinder.find_dates(file))[0].date())
+			except:
+				date_match = ''
 			datestamps.append(date_match)
 
 	if len(datestamps) > 0:
