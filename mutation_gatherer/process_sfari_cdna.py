@@ -19,6 +19,31 @@ def query_mutalyzer_for_hgvs_g(refseq_transcript, variant):
 	
 	return hgvs_g
 
+
+def find_valid_transcript_subversion(data,refseq_transcript):
+	'''
+	Parameters:
+	
+	Returns:
+		response (json): JSON object with query response.
+	'''
+	for index,variant in enumerate(data.iloc[:,0]):
+		if re.search ("^c.",variant):
+			c_dot = variant
+			break
+
+	non_version_transcript = refseq_transcript.split('.')[0]
+	current_subversion = int(refseq_transcript.split('.')[1])
+
+	for subversion in range(current_subversion,-1,-1):
+		adjusted_transcript = '.'.join([non_version_transcript,str(subversion)])
+		hgvs_g = query_mutalyzer_for_hgvs_g(adjusted_transcript, c_dot)
+		if hgvs_g != None:
+			break
+
+	return adjusted_transcript
+
+
 def process_cdna_file(data, refseq_transcript):
 	'''
 	Parameters:
@@ -33,7 +58,7 @@ def process_cdna_file(data, refseq_transcript):
 			variants.append(hgvs_g)
 	return variants
 
-def extract_var_g(variants):
+def extract_var_g(variants, parsee):
 	'''
 
 	Parameters:
@@ -42,13 +67,12 @@ def extract_var_g(variants):
 	Returns:
 
 	'''	
-	hp = hgvs.parser.Parser()
 	all_var_g = []
 	data = pd.DataFrame(columns = ['hgvs', 'var_g'])
 
 	for hgvs_g in variants:
 		try:
-			var_g = hp.parse_hgvs_variant(hgvs_g)
+			var_g = parsee.parse_hgvs_variant(hgvs_g)
 			all_var_g.append(str(var_g.posedit))
 		except:
 			all_var_g.append('')
@@ -78,7 +102,7 @@ def write_hgvs_sfari_file(gene, data):
 
 
 
-def process_sfari_cdna_per_gene(gene, refseq_transcript):
+def process_sfari_cdna_per_gene(gene, refseq_transcript,parsee):
 	'''
 	Parameters:
 	
@@ -86,9 +110,12 @@ def process_sfari_cdna_per_gene(gene, refseq_transcript):
 
 	'''
 	input_sfari_file = "./input_sfari/{}.tsv".format(gene)
+	print (input_sfari_file)
 	input_sfari = pd.read_csv(input_sfari_file, sep="\t")
-	variants = process_cdna_file(data = input_sfari, refseq_transcript = refseq_transcript)
-	output = extract_var_g(variants = variants)
+	adjusted_transcript = find_valid_transcript_subversion(data = input_sfari,refseq_transcript = refseq_transcript)
+	print ("Adjusting transcript to {} for Mutalyzer".format(adjusted_transcript))
+	variants = process_cdna_file(data = input_sfari, refseq_transcript = adjusted_transcript)
+	output = extract_var_g(variants = variants, parsee = parsee)
 	write_hgvs_sfari_file(gene = gene, data = output)
 
 
