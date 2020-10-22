@@ -39,7 +39,8 @@ def extract_info_from_vai_extra(output_vai, refseq_transcript):
 
 	'''
 
-	output_vai_filtered = output_vai[(output_vai.Feature == refseq_transcript) & ((output_vai.Consequence == 'missense_variant') | (output_vai.Consequence == 'frameshift_variant') | (output_vai.Consequence == 'stop_gained') | (output_vai.Consequence == 'inframe_insertion'))]
+	non_versioned_transcript = refseq_transcript.split('.')[0]	
+	output_vai_filtered = output_vai[(output_vai.Feature.str.match(non_versioned_transcript)) & ((output_vai.Consequence == 'missense_variant') | (output_vai.Consequence == 'frameshift_variant') | (output_vai.Consequence == 'stop_gained') | (output_vai.Consequence == 'inframe_insertion'))]
 
 	all_transcripts = []
 	all_cdots = []
@@ -156,7 +157,7 @@ def write_vai_final_file(gene, data):
 	workbook.close()
 
 	print ("Written {}".format(vai_final_output_file))
-	print ("Written {}, \n\nPLEASE PROCEED TO UPLOAD\n\n".format(xlsx_file))
+	print ("Written {}\n\nPLEASE PROCEED TO UPLOAD\n\n".format(xlsx_file))
 
 def process_vai_to_data_final(gene,refseq_transcript):
 	'''
