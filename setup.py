@@ -7,7 +7,7 @@ with open('LICENSE') as f:
 	license = f.read()
 
 setup(name='mutation_gatherer',
-	version='0.2',
+	version='1.0',
 	description='Gather variant information from NCI GDC API, ClinVar API, and specific CSV/TSV and make a variant lollipop plot',
 	url='https://github.com/samaco-lab/mutation_gatherer',
 	long_description=readme,
