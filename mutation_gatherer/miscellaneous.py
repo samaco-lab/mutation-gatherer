@@ -241,9 +241,10 @@ def print_hgvs_venn_file(gene, venn):
 	for_vai.close()
 
 	print ("Written {}".format(hgvs_venn_output_file))
+	print ("Written {}\n\nPLEASE PROCEED TO DOWNLOAD TO USE on http://genome.ucsc.edu/cgi-bin/hgVai\n\n".format(for_vai_file))
 
 
-def create_hgvs_venn_list(gene, venn_groups = 2):
+def create_hgvs_venn_list(gene, parsee, venn_groups = 2):
 	'''
 	
 	
@@ -258,12 +259,15 @@ def create_hgvs_venn_list(gene, venn_groups = 2):
 	output_gdc = extract_var_g(data = output_gdc)
 	output_clinvar = extract_var_g(data = output_clinvar)
 
-	hp = hgvs.parser.Parser()
+	#hp = hgvs.parser.Parser()
 
-	try:
-		ncid = obtain_ncid(hgvs = output_clinvar['hgvs'][0], parsee = hp)
-	except:
-		ncid = ''
+	ncid = ''
+	for hgvs in output_clinvar['hgvs']:
+		try:
+			ncid = obtain_ncid(hgvs = hgvs, parsee = parsee)
+			break
+		except:
+			pass
 
 	if ncid != '':
 		print ("Overlap analysis of HGVS data")
