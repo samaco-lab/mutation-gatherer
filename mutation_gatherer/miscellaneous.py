@@ -261,8 +261,13 @@ def create_hgvs_venn_list(gene, parsee, venn_groups = 2):
 
 	#hp = hgvs.parser.Parser()
 
+	if len(output_clinvar['hgvs']) > 0:
+		hgvs_iteratior = output_clinvar['hgvs']
+	else:
+		hgvs_iteratior = output_gdc['hgvs']
+
 	ncid = ''
-	for hgvs in output_clinvar['hgvs']:
+	for hgvs in hgvs_iteratior:
 		try:
 			ncid = obtain_ncid(hgvs = hgvs, parsee = parsee)
 			break
