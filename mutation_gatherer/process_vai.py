@@ -148,6 +148,8 @@ def write_vai_final_file(gene, data):
 	worksheet.write_row(0, 0, header_xlsx)
 
 	for index,mutation in data.iterrows():
+		if isinstance(mutation['disease'],float):
+			mutation['disease']=''
 		output_tsv = "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n".format(mutation['Uploaded Variation'].strip(),mutation['source'].strip(),mutation['Gene'].strip(),mutation['Feature type'].strip(),mutation['Consequence'].strip(),mutation['Feature'].strip(),mutation['cdot'].strip(),mutation['cdot_number'],mutation['protein'].strip(),mutation['pdot'].strip(),mutation['pdot_number'],mutation['exon'],mutation['interpro'].strip(),mutation['disease'].strip())
 		output_xlsx = (mutation['Uploaded Variation'].strip(),mutation['source'].strip(),mutation['Gene'].strip(),mutation['Feature type'].strip(),mutation['Consequence'].strip(),mutation['Feature'].strip(),mutation['cdot'].strip(),mutation['cdot_number'],mutation['protein'].strip(),mutation['pdot'].strip(),mutation['pdot_number'],mutation['exon'],mutation['interpro'].strip(),mutation['disease'].strip())
 		vai_final_output.write(output_tsv)
